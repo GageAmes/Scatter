@@ -10,6 +10,27 @@ namespace FileSplitterTest
     {
         static void Main(string[] args)
         {
+            System.Console.WriteLine("Would you like to split (0) or recombine (1) the files?");
+            string line = Console.ReadLine();
+
+            int choice = Convert.ToInt32(line);
+
+            if(choice == 0)
+            {
+                System.Console.WriteLine("Split how many ways?");
+                string answer = Console.ReadLine();
+                int splitWays = Convert.ToInt32(answer);
+
+                SplitFile(splitWays);
+            }
+
+            // Keep the console window open in debug mode.
+            Console.WriteLine("Press any key to exit.");
+            System.Console.ReadKey();
+        }
+
+        public static void SplitFile(int numFiles)
+        {
             // Original file that will be split
             string fileToRead = @"C:\Users\Chris\Documents\File Seperator Test\Test File.txt";
 
@@ -19,13 +40,10 @@ namespace FileSplitterTest
             // Base name of the new files
             string fileToWrite = @"C:\Users\Chris\Documents\File Seperator Test\Write File ";
 
-            // Allocate space to hold the seperated bytes
-            int numberOfServices = 2;
-            
             // Each space in the array will be a List of bytes representing a seperated file
-            List<byte>[] data = new List<byte>[numberOfServices];
+            List<byte>[] data = new List<byte>[numFiles];
 
-            for (int i = 0; i < numberOfServices; i++)
+            for (int i = 0; i < numFiles; i++)
             {
                 data[i] = new List<byte>(); // Initialize each space in the array
             }
@@ -36,23 +54,20 @@ namespace FileSplitterTest
             for (int i = 0; i < byteMe.Length; i++)
             {
                 data[place].Add(byteMe[i]);
-                
+
                 place++;
 
-                if (place >= numberOfServices)
+                if (place >= numFiles)
                 {
                     place = 0;
                 }
             }
 
-            for (int i = 0; i < numberOfServices; i++)
+            // Write the split files
+            for (int i = 0; i < numFiles; i++)
             {
                 ByteArrayToFile(fileToWrite + i + ".txt", data[i].ToArray());
             }
-
-            // Keep the console window open in debug mode.
-            Console.WriteLine("Press any key to exit.");
-            System.Console.ReadKey();
         }
 
         // Function to get byte array from a file
