@@ -44,6 +44,9 @@ namespace FileSplitterTest
             // Base name of the new files
             string fileToWrite = "Write File ";
 
+            // Pattern for splitting the files
+            int[] pattern = GenerateSplitPattern(numFiles);
+
             // Each space in the array will be a List of bytes representing a seperated file
             List<byte>[] data = new List<byte>[numFiles];
 
@@ -52,19 +55,11 @@ namespace FileSplitterTest
                 data[i] = new List<byte>(); // Initialize each space in the array
             }
 
-            int place = 0;  // Keep track of which service we're on
-
             // Go through the original file byte by byte
             for (int i = 0; i < byteMe.Length; i++)
             {
-                data[place].Add(byteMe[i]);
-
-                place++;
-
-                if (place >= numFiles)
-                {
-                    place = 0;
-                }
+                int serviceIndex = pattern[i % pattern.Length];
+                data[serviceIndex].Add(byteMe[i]);
             }
 
             // Write the split files
@@ -74,10 +69,7 @@ namespace FileSplitterTest
             }
 
             // Generate a key to tell the program how to recombine
-            string text = fileToWrite + System.Environment.NewLine + numFiles;
-            
-            System.IO.File.WriteAllText("key.txt", text);
-
+            WriteKeyFile("key.txt", fileToWrite, numFiles, pattern);
         }
 
         public static void Recombine()
@@ -192,6 +184,27 @@ namespace FileSplitterTest
 
             // error occured, return false
             return false;
+        }
+
+        private static int[] GenerateSplitPattern(int serviceCount)
+        {
+            //TODO: Generate this pattern dynamically
+            return new[] { 0, 2, 1, 1, 0 };
+        }
+
+        private static void WriteKeyFile(string keyFileName, string splitFileNameBase, int numServices, int[] pattern)
+        {
+            StringBuilder text = new StringBuilder();
+
+            text.AppendLine(splitFileNameBase);
+            text.AppendLine(numServices.ToString());
+
+            foreach (int i in pattern)
+            {
+                text.AppendLine(i.ToString());
+            }
+
+            System.IO.File.WriteAllText(keyFileName, text.ToString());
         }
     }
 }
