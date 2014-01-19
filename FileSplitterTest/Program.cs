@@ -68,6 +68,12 @@ namespace FileSplitterTest
             {
                 ByteArrayToFile(fileToWrite + i + ".txt", data[i].ToArray());
             }
+
+            // Generate a key to tell the program how to recombine
+            string text = fileToWrite + System.Environment.NewLine + numFiles;
+            
+            System.IO.File.WriteAllText(@"C:\Users\Chris\Documents\File Seperator Test\key.txt", text);
+
         }
 
         // Function to get byte array from a file
