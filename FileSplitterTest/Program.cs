@@ -23,6 +23,10 @@ namespace FileSplitterTest
 
                 SplitFile(splitWays);
             }
+            else
+            {
+                Recombine();
+            }
 
             // Keep the console window open in debug mode.
             Console.WriteLine("Press any key to exit.");
@@ -74,6 +78,61 @@ namespace FileSplitterTest
             
             System.IO.File.WriteAllText(@"C:\Users\Chris\Documents\File Seperator Test\key.txt", text);
 
+        }
+
+        public static void Recombine()
+        {
+            int numFiles;
+            string storageLoaction;
+
+            // Read the key file
+            System.IO.StreamReader file = 
+                new System.IO.StreamReader(@"C:\Users\Chris\Documents\File Seperator Test\key.txt");
+
+            storageLoaction = file.ReadLine();
+            numFiles = Convert.ToInt32(file.ReadLine());
+
+            file.Close();
+
+            // Read in all of the seperated files one by one
+            Queue<byte>[] data = new Queue<byte>[numFiles];
+
+            int totalBytes = 0;
+
+            for(int i = 0; i < numFiles; i++)
+            {
+                data[i] = new Queue<byte>();
+
+                byte[] hold = FileToByteArray(storageLoaction + i + ".txt");
+
+                totalBytes += hold.Length;
+
+                for(int j = 0; j < hold.Length; j++)
+                {
+                    data[i].Enqueue(hold[j]);
+                }
+            }
+
+            // Put the bytes back in the original order
+            byte[] originalFile = new byte[totalBytes];
+
+            int place = 0;
+
+            while(data[0].Any())
+            {
+                for (int i = 0; i < data.Length; i++ )
+                {
+                    if(data[i].Any())
+                    {
+                        originalFile[place] = data[i].Dequeue();
+
+                        place++;
+                    }
+                }
+            }
+
+            // Convert the bytes back to a file
+            ByteArrayToFile(@"C:\Users\Chris\Documents\File Seperator Test\combined.txt", originalFile);
         }
 
         // Function to get byte array from a file
