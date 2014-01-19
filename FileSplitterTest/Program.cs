@@ -8,6 +8,8 @@ namespace FileSplitterTest
 {
     class Program
     {
+        private const int MaxPatternLengthMultiplier = 5;       // Multiplies the number of splits to determine the max pattern length
+
         static void Main(string[] args)
         {
             System.Console.WriteLine("Would you like to split (0) or recombine (1) the files?");
@@ -169,8 +171,16 @@ namespace FileSplitterTest
 
         private static int[] GenerateSplitPattern(int serviceCount)
         {
-            //TODO: Generate this pattern dynamically
-            return new[] { 0, 2, 1, 1, 0, 2 };
+            Random rand = new Random();
+            int patternLength = rand.Next(serviceCount, serviceCount * MaxPatternLengthMultiplier);
+            int[] pattern = new int[patternLength];
+
+            for (int i = 0; i < patternLength; i++)
+            {
+                pattern[i] = rand.Next(serviceCount);
+            }
+
+            return pattern;
         }
 
         private static void WriteKeyFile(string keyFileName, string splitFileNameBase, int numServices, int[] pattern)
