@@ -36,13 +36,13 @@ namespace FileSplitterTest
         public static void SplitFile(int numFiles)
         {
             // Original file that will be split
-            string fileToRead = @"C:\Users\Chris\Documents\File Seperator Test\Test File.txt";
+            string fileToRead = "Test File.txt";
 
             // Convert the file into a byte array
             byte[] byteMe = FileToByteArray(fileToRead);
 
             // Base name of the new files
-            string fileToWrite = @"C:\Users\Chris\Documents\File Seperator Test\Write File ";
+            string fileToWrite = "Write File ";
 
             // Each space in the array will be a List of bytes representing a seperated file
             List<byte>[] data = new List<byte>[numFiles];
@@ -76,7 +76,7 @@ namespace FileSplitterTest
             // Generate a key to tell the program how to recombine
             string text = fileToWrite + System.Environment.NewLine + numFiles;
             
-            System.IO.File.WriteAllText(@"C:\Users\Chris\Documents\File Seperator Test\key.txt", text);
+            System.IO.File.WriteAllText("key.txt", text);
 
         }
 
@@ -87,7 +87,7 @@ namespace FileSplitterTest
 
             // Read the key file
             System.IO.StreamReader file = 
-                new System.IO.StreamReader(@"C:\Users\Chris\Documents\File Seperator Test\key.txt");
+                new System.IO.StreamReader("key.txt");
 
             storageLoaction = file.ReadLine();
             numFiles = Convert.ToInt32(file.ReadLine());
@@ -132,7 +132,7 @@ namespace FileSplitterTest
             }
 
             // Convert the bytes back to a file
-            ByteArrayToFile(@"C:\Users\Chris\Documents\File Seperator Test\combined.txt", originalFile);
+            ByteArrayToFile("combined.txt", originalFile);
         }
 
         // Function to get byte array from a file
