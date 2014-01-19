@@ -8,6 +8,8 @@ namespace FileSplitterTest
 {
     class Program
     {
+        private const int MaxPatternLengthMultiplier = 5;       // Multiplies the number of splits to determine the max pattern length
+
         static void Main(string[] args)
         {
             System.Console.WriteLine("Would you like to split (0) or recombine (1) the files?");
@@ -36,13 +38,16 @@ namespace FileSplitterTest
         public static void SplitFile(int numFiles)
         {
             // Original file that will be split
-            string fileToRead = @"C:\Users\Chris\Documents\File Seperator Test\Test File.txt";
+            string fileToRead = "Test File.txt";
 
             // Convert the file into a byte array
             byte[] byteMe = FileToByteArray(fileToRead);
 
             // Base name of the new files
-            string fileToWrite = @"C:\Users\Chris\Documents\File Seperator Test\Write File ";
+            string fileToWrite = "Write File ";
+
+            // Pattern for splitting the files
+            int[] pattern = GenerateSplitPattern(numFiles);
 
             // Each space in the array will be a List of bytes representing a seperated file
             List<byte>[] data = new List<byte>[numFiles];
@@ -52,19 +57,11 @@ namespace FileSplitterTest
                 data[i] = new List<byte>(); // Initialize each space in the array
             }
 
-            int place = 0;  // Keep track of which service we're on
-
             // Go through the original file byte by byte
             for (int i = 0; i < byteMe.Length; i++)
             {
-                data[place].Add(byteMe[i]);
-
-                place++;
-
-                if (place >= numFiles)
-                {
-                    place = 0;
-                }
+                int serviceIndex = pattern[i % pattern.Length];
+                data[serviceIndex].Add(byteMe[i]);
             }
 
             // Write the split files
@@ -74,25 +71,17 @@ namespace FileSplitterTest
             }
 
             // Generate a key to tell the program how to recombine
-            string text = fileToWrite + System.Environment.NewLine + numFiles;
-            
-            System.IO.File.WriteAllText(@"C:\Users\Chris\Documents\File Seperator Test\key.txt", text);
-
+            WriteKeyFile("key.txt", fileToWrite, numFiles, pattern);
         }
 
         public static void Recombine()
         {
             int numFiles;
             string storageLoaction;
+            int[] pattern;
 
             // Read the key file
-            System.IO.StreamReader file = 
-                new System.IO.StreamReader(@"C:\Users\Chris\Documents\File Seperator Test\key.txt");
-
-            storageLoaction = file.ReadLine();
-            numFiles = Convert.ToInt32(file.ReadLine());
-
-            file.Close();
+            ReadKeyFile("key.txt", out storageLoaction, out numFiles, out pattern);
 
             // Read in all of the seperated files one by one
             Queue<byte>[] data = new Queue<byte>[numFiles];
@@ -101,38 +90,24 @@ namespace FileSplitterTest
 
             for(int i = 0; i < numFiles; i++)
             {
-                data[i] = new Queue<byte>();
+                byte[] fileBytes = FileToByteArray(storageLoaction + i + ".txt");
 
-                byte[] hold = FileToByteArray(storageLoaction + i + ".txt");
+                totalBytes += fileBytes.Length;
 
-                totalBytes += hold.Length;
-
-                for(int j = 0; j < hold.Length; j++)
-                {
-                    data[i].Enqueue(hold[j]);
-                }
+                data[i] = new Queue<byte>(fileBytes);
             }
 
             // Put the bytes back in the original order
             byte[] originalFile = new byte[totalBytes];
 
-            int place = 0;
-
-            while(data[0].Any())
+            for (int i = 0; i < totalBytes; i++)
             {
-                for (int i = 0; i < data.Length; i++ )
-                {
-                    if(data[i].Any())
-                    {
-                        originalFile[place] = data[i].Dequeue();
-
-                        place++;
-                    }
-                }
+                int serviceIndex = pattern[i % pattern.Length];
+                originalFile[i] = data[serviceIndex].Dequeue();
             }
 
             // Convert the bytes back to a file
-            ByteArrayToFile(@"C:\Users\Chris\Documents\File Seperator Test\combined.txt", originalFile);
+            ByteArrayToFile("combined.txt", originalFile);
         }
 
         // Function to get byte array from a file
@@ -192,6 +167,61 @@ namespace FileSplitterTest
 
             // error occured, return false
             return false;
+        }
+
+        private static int[] GenerateSplitPattern(int serviceCount)
+        {
+            Random rand = new Random();
+            int patternLength = rand.Next(serviceCount, serviceCount * MaxPatternLengthMultiplier);
+            int[] pattern = new int[patternLength];
+
+            for (int i = 0; i < patternLength; i++)
+            {
+                pattern[i] = rand.Next(serviceCount);
+            }
+
+            return pattern;
+        }
+
+        private static void WriteKeyFile(string keyFileName, string splitFileNameBase, int numServices, int[] pattern)
+        {
+            StringBuilder text = new StringBuilder();
+
+            text.AppendLine(splitFileNameBase);
+            text.AppendLine(numServices.ToString());
+
+            foreach (int i in pattern)
+            {
+                text.AppendLine(i.ToString());
+            }
+
+            System.IO.File.WriteAllText(keyFileName, text.ToString());
+        }
+
+        private static void ReadKeyFile(string keyFileName, out string splitFileNameBase, out int numServices, out int[] pattern)
+        {
+            System.IO.StreamReader file = new System.IO.StreamReader("key.txt");
+            string[] patternStrings;
+            List<int> patternList = new List<int>();
+
+            splitFileNameBase = file.ReadLine();
+            numServices = Convert.ToInt32(file.ReadLine());
+            patternStrings = file.ReadToEnd().Split(Environment.NewLine.ToArray());
+
+            file.Close();
+
+            // Recover the pattern from the file
+            foreach (string s in patternStrings)
+            {
+                int index;
+
+                if (int.TryParse(s, out index))
+                {
+                    patternList.Add(index);
+                }
+            }
+
+            pattern = patternList.ToArray();
         }
     }
 }
