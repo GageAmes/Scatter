@@ -76,15 +76,10 @@ namespace FileSplitterTest
         {
             int numFiles;
             string storageLoaction;
+            int[] pattern;
 
             // Read the key file
-            System.IO.StreamReader file = 
-                new System.IO.StreamReader("key.txt");
-
-            storageLoaction = file.ReadLine();
-            numFiles = Convert.ToInt32(file.ReadLine());
-
-            file.Close();
+            ReadKeyFile("key.txt", out storageLoaction, out numFiles, out pattern);
 
             // Read in all of the seperated files one by one
             Queue<byte>[] data = new Queue<byte>[numFiles];
@@ -93,34 +88,20 @@ namespace FileSplitterTest
 
             for(int i = 0; i < numFiles; i++)
             {
-                data[i] = new Queue<byte>();
+                byte[] fileBytes = FileToByteArray(storageLoaction + i + ".txt");
 
-                byte[] hold = FileToByteArray(storageLoaction + i + ".txt");
+                totalBytes += fileBytes.Length;
 
-                totalBytes += hold.Length;
-
-                for(int j = 0; j < hold.Length; j++)
-                {
-                    data[i].Enqueue(hold[j]);
-                }
+                data[i] = new Queue<byte>(fileBytes);
             }
 
             // Put the bytes back in the original order
             byte[] originalFile = new byte[totalBytes];
 
-            int place = 0;
-
-            while(data[0].Any())
+            for (int i = 0; i < totalBytes; i++)
             {
-                for (int i = 0; i < data.Length; i++ )
-                {
-                    if(data[i].Any())
-                    {
-                        originalFile[place] = data[i].Dequeue();
-
-                        place++;
-                    }
-                }
+                int serviceIndex = pattern[i % pattern.Length];
+                originalFile[i] = data[serviceIndex].Dequeue();
             }
 
             // Convert the bytes back to a file
@@ -189,7 +170,7 @@ namespace FileSplitterTest
         private static int[] GenerateSplitPattern(int serviceCount)
         {
             //TODO: Generate this pattern dynamically
-            return new[] { 0, 2, 1, 1, 0 };
+            return new[] { 0, 2, 1, 1, 0, 2 };
         }
 
         private static void WriteKeyFile(string keyFileName, string splitFileNameBase, int numServices, int[] pattern)
@@ -205,6 +186,32 @@ namespace FileSplitterTest
             }
 
             System.IO.File.WriteAllText(keyFileName, text.ToString());
+        }
+
+        private static void ReadKeyFile(string keyFileName, out string splitFileNameBase, out int numServices, out int[] pattern)
+        {
+            System.IO.StreamReader file = new System.IO.StreamReader("key.txt");
+            string[] patternStrings;
+            List<int> patternList = new List<int>();
+
+            splitFileNameBase = file.ReadLine();
+            numServices = Convert.ToInt32(file.ReadLine());
+            patternStrings = file.ReadToEnd().Split(Environment.NewLine.ToArray());
+
+            file.Close();
+
+            // Recover the pattern from the file
+            foreach (string s in patternStrings)
+            {
+                int index;
+
+                if (int.TryParse(s, out index))
+                {
+                    patternList.Add(index);
+                }
+            }
+
+            pattern = patternList.ToArray();
         }
     }
 }
