@@ -1,6 +1,0 @@
-C:\Users\Chris\Documents\GitHub\FileSplitterTest\FileSplitterTest\bin\Debug\FileSplitterTest.exe.config
-C:\Users\Chris\Documents\GitHub\FileSplitterTest\FileSplitterTest\bin\Debug\FileSplitterTest.exe
-C:\Users\Chris\Documents\GitHub\FileSplitterTest\FileSplitterTest\bin\Debug\FileSplitterTest.pdb
-C:\Users\Chris\Documents\GitHub\FileSplitterTest\FileSplitterTest\obj\Debug\FileSplitterTest.csprojResolveAssemblyReference.cache
-C:\Users\Chris\Documents\GitHub\FileSplitterTest\FileSplitterTest\obj\Debug\FileSplitterTest.exe
-C:\Users\Chris\Documents\GitHub\FileSplitterTest\FileSplitterTest\obj\Debug\FileSplitterTest.pdb
